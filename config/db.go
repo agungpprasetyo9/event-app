@@ -1,0 +1,33 @@
+package config
+
+import (
+	"log"
+	"os"
+
+	"example.com/event-app/models"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+)
+
+var DB *gorm.DB
+
+func ConnectDB() {
+	dsn := os.Getenv("DATABASE_URI")
+	if dsn == "" {
+		log.Fatal("Environment variable belum di isi")
+	}
+
+	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+
+	if err != nil {
+		log.Fatal("Gagal terkoneksi ke database", err)
+	}
+
+	err = database.AutoMigrate(&models.Event{})
+	if err != nil {
+		log.Fatal("Gagal Melakukan Migrate", err)
+	}
+
+	DB = database
+	log.Println("Berhasil Terkoenksi ke database")
+}
