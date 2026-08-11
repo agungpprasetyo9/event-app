@@ -16,9 +16,6 @@ func CreateEvent(context *gin.Context) {
 			"error": err.Error(),
 		})
 	}
-
-	event.UserId = 1
-
 	config.DB.Create(&event)
 	context.JSON(http.StatusCreated, gin.H{
 		"message": "Data berhasil di buat",
@@ -33,5 +30,67 @@ func GetEvents(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{
 		"message": "Data berhasil dibuat",
 		"event":   event,
+	})
+}
+
+func GetEventsbyId(context *gin.Context) {
+	var event models.Event
+	paramsId := context.Param("id")
+
+	var eventData = config.DB.First(&event, paramsId).Error
+	if eventData != nil {
+		context.JSON(http.StatusNotFound, gin.H{
+			"error": "Event Tidak ditemukan",
+		})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{
+		"message": "Data tampil detail event",
+		"event":   event,
+	})
+}
+
+func UpdateEvent(context *gin.Context) {
+	var event models.Event
+	paramsId := context.Param("id")
+
+	var eventData = config.DB.First(&event, paramsId).Error
+	if eventData != nil {
+		context.JSON(http.StatusNotFound, gin.H{
+			"error": "Event Tidak ditemukan",
+		})
+		return
+	}
+
+	var input models.Event
+	err := context.ShouldBindJSON(&input)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
+
+	config.DB.Model(&event).Updates(input)
+	context.JSON(http.StatusOK, gin.H{
+		"message": "Data Berhasil diupdate",
+		"event":   event,
+	})
+}
+
+func DeleteEvent(context *gin.Context) {
+	var event models.Event
+	paramsId := context.Param("id")
+
+	var eventData = config.DB.First(&event, paramsId).Error
+	if eventData != nil {
+		context.JSON(http.StatusNotFound, gin.H{
+			"error": "Event Tidak ditemukan",
+		})
+		return
+	}
+
+	config.DB.Unscoped().Delete(&event)
+	context.JSON(http.StatusOK, gin.H{
+		"message": "Data berhasil di delete",
 	})
 }
